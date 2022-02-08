@@ -19,6 +19,8 @@ namespace bneostaker
         [InitialValue("0x48c40d4666f93408be1bef038b6722404d9a4c2a", ContractParameterType.Hash160)]
         private static readonly UInt160 bNEOHash = default;
         [InitialValue("0x54806765d451e2b0425072730d527d05fbfa9817", ContractParameterType.Hash160)]
+        private static readonly UInt160 noBugHash = default;
+        [InitialValue("0x54806765d451e2b0425072730d527d05fbfa9817", ContractParameterType.Hash160)]
         private static readonly UInt160 DEFAULTOWNER = default;
 
         private const byte PREFIXOWNER = 0x03;
@@ -101,6 +103,17 @@ namespace bneostaker
             Storage.Put(Storage.CurrentContext, new byte[] { PREFIXREWARDPERTOKENSTORED }, (now - lasttime) * rate / ts + rps);
             Storage.Put(Storage.CurrentContext, new byte[] { PREFIXREWARDPERTOKENUPDATEDTIME }, now);
             return true;
+        }
+
+        public static void claim(UInt160 account) {
+            ExecutionEngine.Assert(Runtime.CheckWitness(account));
+            SyncAccount(account);
+            BigInteger reward = (BigInteger)new StorageMap(Storage.CurrentContext, PREFIXREWARD).Get(account);
+            if (reward > 0)
+            {
+                new StorageMap(Storage.CurrentContext, PREFIXREWARD).Put(account, 0);
+                ExecutionEngine.Assert(Nep17Token.Transfer(noBugHash, account, reward));
+            }
         }
 
         public static void SetOwner(UInt160 owner)
