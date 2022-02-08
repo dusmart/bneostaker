@@ -78,7 +78,7 @@ namespace bneostaker
         }
 
         // TODO delete the origin `Transfer` and make this one as `Transfer`
-        public static bool TrueTransfer(UInt160 from, UInt160 to, BigInteger amount, object data)
+        public static new bool Transfer(UInt160 from, UInt160 to, BigInteger amount, object data)
         {
             if (amount > 0)
             {
@@ -112,7 +112,7 @@ namespace bneostaker
             if (reward > 0)
             {
                 new StorageMap(Storage.CurrentContext, PREFIXREWARD).Put(account, 0);
-                ExecutionEngine.Assert(Nep17Token.Transfer(noBugHash, account, reward));
+                ExecutionEngine.Assert((bool)Contract.Call(noBugHash, "transfer", CallFlags.All, new object[] { Runtime.ExecutingScriptHash, account, reward, null }));
             }
         }
 
